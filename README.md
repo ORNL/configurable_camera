@@ -1,16 +1,9 @@
-# configurable_code
+# configurable_camera
 
-Based on a previous Python-based implementation by David Bolme (bolmeds@ornl.gov), rewritten in C, using Gstreamer.
+Written by Gavin Jager and Greyson Jones, with help from interns Shane Menzigian, Laura Smith, and Christian Tongate.
 
-Written by Gavin Jager (jagergf@ornl.gov) and Greyson Jones, with help from Shane Menzigian, Laura Smith, and Christian Tongate.
-
-Acknowledgement and thanks to our fearless leaders Christi Johnson and David Cornett.
-
-## Related Software
-
-- [HST App](): Will update with public facing repo once open-sourced. Used by proctors when an activity in view of the camera is started or stopped; sends raw recording trigger messages to the [UDP interface](./App_Systems.md#udp-command-and-raw-recording-toggle-receiver).
-- [Monitoring App](): Lab-view implementation of a monitoring app. Will update with public facing repo or include a version of this software in this repo. Receives [broadcast status messages](./App_Systems.md#udp-status-broadcast) and implements user interfaces for hardware control.
-
+Acknowledgement and thanks to Christi Johnson and David Cornett.
+Based on a previous Python-based implementation by David Bolme.
 
 ## Overview
 
@@ -18,24 +11,21 @@ Acknowledgement and thanks to our fearless leaders Christi Johnson and David Cor
 - [Installation](#installation)
 - [User Manual](docs/Manual.md)
 
-These are a little out of date, but generally still apply:
-
-
 ### Repository Structure
-```
-docs/		    -- the answers to all of life's questions
-hardware/       -- python scripts for peripheral hardware control
-include/	    -- location for all header (.h) files
-logs/           -- logs created by the startup script go here.
-scripts/	    -- some installation and testing scripts
-src/		    -- location for all source code (.c) files
-tests/		    -- tests for your code
-config.json	    -- configures the app
-Makefile	    -- main and test compilation recipes go here
-pipeline.txt    -- the gstreamer pipeline used by the RTSP server
-README.md	    -- good stuff
-run.sh          -- startup script
-```
+| File/Directory | Description |
+| - | - |
+| `docs/`       | documentation on app systems and hardware          |
+| `hardware/`   | python scripts for peripheral hardware control     |
+| `include/`    | location for all header (.h) files                 |
+| `logs/`       | logs created by the startup script go here.        |
+| `scripts/`    | some installation and testing scripts              |
+| `src/`        | location for all source code (.c) files            |
+| `tests/`		| tests (probably out-of-date)                       |
+| `config.json`	| configuration file for system settings             |
+| `Makefile`	| main and test compilation recipes                  |
+| `pipeline.txt`| the gstreamer pipeline used by the RTSP server     |
+| `README.md`	| you are here                                       |
+| `run.sh`      | startup script                                     |
 
 ### Compiled Executables
 ```
@@ -43,17 +33,20 @@ sensor_setup    -- run whenever a new sensor is used
 main            -- called by run.sh
 ```
 
-### Notes and Differences
+### General Description
 
-This is a pretty comprehensive overhaul of the old configurable code, but still retains most of the base functionality and the interface with the HST app. Here are the main differences:
+This code was written for a custom camera platform with interchangeable lenses and sensors developed for the IARPA-BRIAR project in ORNL's role as T&E partner. This software provides a consistent interface with multiple sensor formats and lens control schemes. It also integrates with the other commercial and custom systems used on the project and records specialized data and metadata. The software runs on Jetson AGX platforms using Basler 2D sensors connected over USB.
 
-- The configurable cameras now stream directly to NVR using RTSP and can be viewed in Camera Station
-    - This means that the compressed configurable data will now be curated with the COTS data.
+The code uses Gstreamer and Glib libraries to create and manage an RTSP server used to stream video data. It uses a Gstreamer plugin developed by Basler to pull frames from a sensor into a media pipeline, which is configured to handle the specific sensor format. The media pipeline compresses the video to h264, which is then streamed using over RTSP once a client connects to the camera. Status information from the camera is continuously broadcast over UDP on a separate network. Additionally, UDP commands can be sent over the network to the camera to control sensor and lens settings as well as toggle short recordings of the uncompressed frames from the sensor. 
+
+This is a pretty comprehensive overhaul of the old python code, but still retains most of the base functionality and the ability to interface with the [HST app](#related-software). Here are the main differences:
+
+- The configurable cameras can now stream directly to a network video recorder or other RTSP client
 - All control and metadata details needed for camera operation are configured in `config.json` (see [App Systems - Config](docs/App_Systems.md#config))
 - Raw recording is optional
 - An additional [hardware control interface](docs/App_Systems.md#peripheral-hardware-control) is used to adapt peripheral hardware (focus motors, lens controllers, gimbals, etc.) to a consistent UDP interface defined in [config.json](docs/App_Systems.md#config). 
 - Updated compatibility with the [HST App](#related-software) to selectively trigger raw recording based on location/target.
-- The Monitoring Application was rewritten in LabView:
+- The [Monitoring Application](#related-software) was rewritten in LabView:
     - Got rid of the viewer (but might add it back in...).
     - Implements a user interface for hardware (focus motor, etc.) control.
     - Added some additional status checks and displays
@@ -67,14 +60,13 @@ The Jetsons have Gstreamer installed by default.
 
 ### Dependencies
 
-There might be a couple other ones, let somebody know if you're having trouble.
 ```
 sudo apt update
 sudo apt upgrade
 sudo apt install libgstrtspserver-1.0-0 libgstrtspserver-1.0-dev screen
 ```
 
-### Install/Upgrade Baser Pylon SDK:
+#### Install/Upgrade Baser Pylon SDK:
 
 1. Check the current installation (if there is one)
     - `pylon --version` or dig around in `/opt/pylon`
@@ -96,7 +88,7 @@ This will install the pylon SDK.
 
 Run `echo $PYLON_ROOT` and verify that /opt/pylon is returned
 
-### Install Gstreamer Pylon Source
+#### Install Gstreamer Pylon Source
 
 If there's a copy of the repo on the software drive, copy it to the home directory, otherwise go to the [gst-plugin-pylon](github.com/basler/gst-plugin-pylon) repo, and copy the https address to clone it. Open a terminal and clone the repo into the home directory.
 
@@ -125,17 +117,6 @@ gst-inspect-1.0 pylonsrc
 ```
 
 It will print the specs for the gstreamer element.
-
-
-
-
-### This Repository
-
-Next, clone the configurable_code repo:
-```
-cd
-git clone https://code.ornl.gov/ghj/configurable_code.git
-```
 
 ### Build
 
@@ -167,6 +148,14 @@ During development use `make dev_all` -- compiles with added warnings and things
     - Need to square this with bayer2rgb, extra data in buffers throws this off.
 7. See if there's a better way to deal with bayer stuff.
 8. Add support for non-Basler sensors (general sensor interface)
+
+## Related Software
+
+This software was designed for compatibility with two other systems written and used on the BRIAR project. At the time of this commit, these apps have not been made publicly available, but their function as it relates to the configurable_camera code should be easy to replicate.
+
+- _BRIAR HST App_: Will update with public facing repo once open-sourced. Used by proctors when an activity in view of the camera is started or stopped; sends raw recording trigger messages to the [UDP interface](./App_Systems.md#udp-command-and-raw-recording-toggle-receiver).
+- _Camera Monitoring App_: Lab-view implementation of a monitoring app. Will update with public facing repo or include a version of this software in this repo. Receives [broadcast status messages](./docs/App_Systems.md#udp-status-broadcast) and implements user interfaces for hardware control.
+
 
 ## Notes
 
