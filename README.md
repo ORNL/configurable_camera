@@ -153,7 +153,7 @@ During development use `make dev_all` -- compiles with added warnings and things
 
 This software was designed for compatibility with two other systems written and used on the BRIAR project. At the time of this commit, these apps have not been made publicly available, but their function as it relates to the configurable_camera code should be easy to replicate.
 
-- _BRIAR HST App_: Will update with public facing repo once open-sourced. Used by proctors when an activity in view of the camera is started or stopped; sends raw recording trigger messages to the [UDP interface](./App_Systems.md#udp-command-and-raw-recording-toggle-receiver).
+- _BRIAR HST App_: Will update with public facing repo once open-sourced. Used by proctors when an activity in view of the camera is started or stopped; sends raw recording trigger messages to the [UDP interface](./docs/App_Systems.md#udp-command-and-raw-recording-toggle-receiver).
 - _Camera Monitoring App_: Lab-view implementation of a monitoring app. Will update with public facing repo or include a version of this software in this repo. Receives [broadcast status messages](./docs/App_Systems.md#udp-status-broadcast) and implements user interfaces for hardware control.
 
 
