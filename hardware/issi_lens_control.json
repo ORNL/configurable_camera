@@ -1,0 +1,21 @@
+{
+    "Name":             "ISSI Lens Controller",
+    "Filepath":         "hardware/issi_lens_control.py",
+    "Listener Port":    "7824",
+    "Device IP":        "192.168.2.252",
+    "Device Port":      "1337",
+    "Capabilities": [
+        {
+            "Name": "Zoom",
+            "Commands":["+", "++", "-", "--"]
+        },
+        {
+            "Name": "Focus",
+            "Commands":["+", "++", "-", "--"]
+        },
+        {
+            "Name": "Iris",
+            "Commands":["Open", "Close"]
+        }
+    ]
+}

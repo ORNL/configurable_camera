@@ -1,0 +1,13 @@
+{
+    "Name":             "GPIO Focus Motor",
+    "Filepath":         "hardware/gpio_focus_motor.py",
+    "Listener Port":    "7926",
+    "Device IP":        "None",
+    "Device Port":      "None",
+    "Capabilities": [
+        {
+            "Name": "Focus",
+            "Commands":["+", "++", "-", "--"]
+        }
+    ]
+}

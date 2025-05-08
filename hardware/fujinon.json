@@ -1,0 +1,25 @@
+{
+    "Name":             "Fujinon",
+    "Filepath":         "hardware/fujinon.py",
+    "Listener Port":    "7927",
+    "Device IP":        "192.168.2.251",
+    "Device Port":      "1337",
+    "Capabilities": [
+        {
+            "Name":"Focus",
+            "Commands":["+", "++", "-", "--"]
+        },
+        {
+            "Name":"Zoom",
+            "Commands":["+", "++", "-", "--"]
+        },
+        {
+            "Name":"Iris",
+            "Commands":["Open", "Close"]
+        },
+        {
+            "Name":"Extender",
+            "Commands":["1x", "2x"]
+        }
+    ]
+}

@@ -1,0 +1,38 @@
+{
+    "Metadata":
+    {
+        "Name":             "config1",
+        "Location":         "field",
+        "Range":            500,
+        "Yaw":              12,
+        "Elevated":         false,
+        "Lens Name":        "Sigma 600",
+        "Focal Length":     600,
+        "Collection ID":    "Collection1234"
+    },
+    "Control Data":
+    {
+        "Record Raw":               true,
+        "Raw Storage":              "/data/rec",
+        "Control IP":               "127.0.0.1",
+        "Control Port":             9000,
+        "Status Broadcast Port":    9001,
+        "Raw Time Limit":           600,
+        "RTSP Address":             "127.0.0.1",
+        "Hardware Scripts":[
+            {
+                "Name":             "GPIO Focus Motor",
+                "Filepath":         "hardware/gpio_focus_motor.py",
+                "Listener Port":    "7926",
+                "Device IP":        "None",
+                "Device Port":      "None",
+                "Capabilities": [
+                    {
+                        "Name": "Focus",
+                        "Commands":["+", "-"]
+                    }
+                ]
+            }
+        ]
+    }
+}

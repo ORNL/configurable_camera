@@ -1,0 +1,41 @@
+{
+    "Control Data":
+    {
+        "Record Raw":               false,
+        "Raw Storage":              "/data/rec",
+        "Control IP":               "192.168.1.11",
+        "Control Port":             9787,
+        "Status Broadcast Port":    9788,
+        "Raw Time Limit":           10,
+        "RTSP Address":             "192.168.0.175",
+        "Hardware Scripts": [
+            {
+                "Name":             "ISSI Focus Controller",
+                "Filepath":         "scripts/fake/test.py",
+                "Listener Port":    "6789",
+                "Device IP":        "127.0.0.1",
+                "Device Port":      "1234",
+                "Capabilities": [
+                    {
+                        "Name":     "Focus",
+                        "Commands": ["+", "-"]
+                    },
+                    {
+                        "Name":     "Zoom",
+                        "Commands": ["+", "-"]
+                    }
+                ]
+            }
+        ]
+    },
+    "Metadata":
+    {
+        "Location":         "location1",
+        "Range":            500,
+        "Yaw":              12,
+        "Elevated":         true,
+        "Lens Name":        "Sigma 600",
+        "Focal Length":     600,
+        "Collection ID":    "Collection1234"
+    }
+}

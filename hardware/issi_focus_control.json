@@ -1,0 +1,13 @@
+{
+    "Name":             "ISSI Focus Controller",
+    "Filepath":         "hardware/issi_focus_control.py",
+    "Listener Port":    "7925",
+    "Device IP":        "192.168.2.252",
+    "Device Port":      "1339",
+    "Capabilities": [
+        {
+            "Name": "Focus",
+            "Commands":["+", "++", "-", "--"]
+        }
+    ]
+}

@@ -1,0 +1,21 @@
+( pylonsrc name=source cam::CenterX=true cam::CenterY=true cam::ExposureTime=%.1f cam::ExposureAuto=%i cam::Gain=%.1f cam::GainAuto=%i ! %s ! 
+ tee name=t ! queue name=raw_queue ! splitmuxsink name=sink muxer=identity location=/dev/null max-size-time=600000000000 t. !
+ queue name=rtsp_queue !%s nvvidconv name=converter ! video/x-raw(memory:NVMM),format=I420,framerate=30/1 !
+ nvv4l2h264enc bitrate=20000000 profile=4 preset-level=2 maxperf-enable=true ! h264parse ! video/x-h264,alignment=au,stream-format=byte-stream ! rtph264pay name=pay0 )
+
+______________
+
+This file is used to configure the gstreamer pipeline created by the RTSP server in the application.
+
+It is set up this way so that the application does not need to be recompiled for trivial changes to pipeline settings.
+
+The way the pipeline description is laid out in this text file should encapsulate both an rtsp/raw and an rtsp only pipeline:
+ - The pipeline description should span four lines of text.
+ - To create a description of the combined rtsp/raw pipeline, the app will read and concatenate all four lines above.
+ - To create a description of the rtsp only pipeline, the app will concatenate only the first, third, and fourth lines above; skipping the second.
+ - All content related to the raw branch and tee structure should be contained to the second line.
+ - Each line except the fourth should end with a "!" and each line except the first should start with a " "
+to link it to the next element on the next line.
+ - The %s string replacement characters will be used to format in gstreamer capabilities and a bayer2rgb element if needed
+
+The function gst_pipeline_txt_gen, implemented in src/config.c, is responsible for reading this file and any others like it.
