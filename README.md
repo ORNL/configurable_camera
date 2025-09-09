@@ -71,9 +71,8 @@ sudo apt install libgstrtspserver-1.0-0 libgstrtspserver-1.0-dev screen
 1. Check the current installation (if there is one)
     - `pylon --version` or dig around in `/opt/pylon`
     - If the version is ~7.4 we're good, proceed to [Install Gstreamer Pylon Source](#install-gstreamer-pylon-source).
-2. Get the newest version off the software drive (ask somebody), or download it if the drive is not available:
+2. Download the newest Pylon Camera Software Suite Linux ARM - Debian Installer Package
 - [Basler Downloads](www2.baslerweb.com/en/downloads/software-downloads/)
-- Download the newest Pylon Camera Software Suite Linux x86 (64 Bit) - Debian Installer Package
 
 In the terminal, navigate to the ~/Downloads directory and run the follwing to extract the .deb installer files into a new directory
 
