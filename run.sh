@@ -1,7 +1,9 @@
 #!/bin/bash
 
-DATE=$(date +%Y%m%d)
-HOSTNAME=$(hostname)
-LOGFILE="./logs/$DATE/$HOSTNAME/terminal.log" #/${hostname}/terminal.log"
+LOGFILE="~/configurable_camera.log"
  
-screen -L -Logfile $LOGFILE -S camera ./main
+if ! screen -list | grep -q "camera"; then
+    screen -L -Logfile $LOGFILE -S camera ./main
+else
+    screen -r camera
+fi
