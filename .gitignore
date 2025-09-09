@@ -1,0 +1,12 @@
+
+# executables
+main
+sensor_setup
+build/
+
+# config files
+# TODO: figure out a better tracking solution for config.json
+sensor.json
+
+__pycache__/
+.DS_Store
