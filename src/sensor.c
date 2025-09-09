@@ -433,9 +433,9 @@ char *sensorSetupInfoJSON(SensorSetupInfo *ssi) {
     return json_string;
 }
 
-int writeToSensorSetupJSON(const char* json_string) {
+static int writeToSensorSetupJSON(const char* sensor_setup_json_path, const char* json_string) {
     FILE *sensor_metadata_file;
-    sensor_metadata_file = fopen(SENSOR_SETUP_JSON, "w");
+    sensor_metadata_file = fopen(sensor_setup_json_path, "w");
     if (sensor_metadata_file == NULL) {
         timestamp_prefix_err();
         g_printerr("Unable to open sensor.json for writing.\n");
@@ -452,8 +452,7 @@ int writeToSensorSetupJSON(const char* json_string) {
     return 0;
 }
 
-int writeSensorSetupJSON(void) {
-    //TODO: Check file write 
+int writeSensorSetupJSON(const char *sensor_setup_json_path) {
     GstElement *pylonsrc;
     pylonsrc = gst_element_factory_make("pylonsrc", "sensor_setup");
     if (!pylonsrc) {
@@ -461,29 +460,28 @@ int writeSensorSetupJSON(void) {
         return -1;
     }
     SensorSetupInfo *ssi = getSensorSetupInfo(pylonsrc);
+    gst_object_unref(pylonsrc);
     if (ssi == NULL) {
-        gst_object_unref(pylonsrc);
         return -1;
     }
 
     char *sensor_setup_json = sensorSetupInfoJSON(ssi);
 
-    int ret = writeToSensorSetupJSON(sensor_setup_json);
+    int ret = writeToSensorSetupJSON(sensor_setup_json_path, sensor_setup_json);
 
     free(sensor_setup_json);
-    gst_object_unref(pylonsrc);
     freeSensorSetupInfo(ssi);
     return ret;
 }
 
-cJSON *parseSensorSetupJSON(void) {
+static cJSON *parseSensorSetupJSON(const char *sensor_setup_json_path) {
     /*
     Get parsed JSON from the SENSOR_SETUP_JSON file
     */
     char file_buffer[FILE_BUFFER_SIZE];
     memset(file_buffer, '\0', FILE_BUFFER_SIZE);
 
-    FILE *fp = fopen(SENSOR_SETUP_JSON, "r");
+    FILE *fp = fopen(sensor_setup_json_path, "r");
     if (fp == NULL) {
         timestamp_prefix_err();
         g_printerr("Unable to open sensor.json for reading.\n");
@@ -513,7 +511,7 @@ cJSON *parseSensorSetupJSON(void) {
     return json;
 }
 
-SensorSetupInfo *loadSensorSetupInfo(void) {
+SensorSetupInfo *loadSensorSetupInfo(const char* sensor_setup_json_path) {
     /*
     Load sensor information from a JSON file written by
     writeSensorSetupJSON.
@@ -521,7 +519,7 @@ SensorSetupInfo *loadSensorSetupInfo(void) {
     for the gstreamer pipeline
     */
 
-    cJSON *json = parseSensorSetupJSON();
+    cJSON *json = parseSensorSetupJSON(sensor_setup_json_path);
 
     SensorSetupInfo *ssi = (SensorSetupInfo *)malloc(sizeof(SensorSetupInfo));
     memset(ssi, 0, sizeof(SensorSetupInfo));
@@ -670,33 +668,16 @@ char *sensorStaticInfoJSON(SensorStaticInfo *ssi) {
 
 // setters
 
-int setDoubleInSensorJSON(const char *key, double value) {
-
-    cJSON *json = parseSensorSetupJSON();
-
-    cJSON_ReplaceItemInObjectCaseSensitive(json, key, cJSON_CreateNumber((int)value));
-
-    char *json_string = cJSON_Print(json);
-
-    int ret = writeToSensorSetupJSON(json_string);
-
-    free(json_string);
-    cJSON_Delete(json);
-    return ret;
-} 
-
 void setSensorGain(GstElement *pylonsrc, double dB) {
     gst_child_proxy_set(GST_CHILD_PROXY(pylonsrc),
         "cam::Gain", dB,
         NULL);
-    setDoubleInSensorJSON("Gain", dB);
 }
 
 void setSensorExposureTime(GstElement *pylonsrc, double microseconds) {
     gst_child_proxy_set(GST_CHILD_PROXY(pylonsrc),
         "cam::ExposureTime", microseconds,
         NULL);
-    setDoubleInSensorJSON("Exposure Time", microseconds);
 }
 
 void setSensorAutoGain(GstElement *pylonsrc, int setting) {

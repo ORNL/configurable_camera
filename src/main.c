@@ -18,6 +18,10 @@
 
 #define PIPELINE_STRING_SIZE 2048
 
+#define DEFAULT_CONFIG_JSON "config.json"
+#define DEFAULT_SENSOR_JSON "sensor.json"
+#define DEFAULT_PIPELINE_TXT "pipeline.txt"
+
 // TODO: I think this should have external linkage, probably shouldn't be static as it's passed into pipeline_data
 // and potentially accessed elsewhere
 static GMainLoop *loop;
@@ -46,6 +50,20 @@ int main(int argc, char* argv[]){
     int err_code = EXIT_SUCCESS;
 
     gst_init(&argc, &argv);
+    gchar* config_file;
+    gchar* sensor_file;
+    gchar* pipeline_file;
+
+    gchar* working_directory;
+
+    if (argc == 2) {
+        working_directory = argv[1];
+    } else {
+        working_directory = ".";
+    }
+    config_file = g_strdup_printf("%s/%s", working_directory, DEFAULT_CONFIG_JSON);
+    sensor_file = g_strdup_printf("%s/%s", working_directory, DEFAULT_SENSOR_JSON);
+    pipeline_file = g_strdup_printf("%s/%s", working_directory, DEFAULT_PIPELINE_TXT);
 
 	// ---------- Set up context structs and objects ----------
 
@@ -60,7 +78,9 @@ int main(int argc, char* argv[]){
 
     // Load sensor info from the setup file written by ./sensor_setup
     pipeline_data.sensor_setup_info = sensor_setup_info
-        = loadSensorSetupInfo();
+        = loadSensorSetupInfo(sensor_file);
+
+    g_free(sensor_file);
 
     if (sensor_setup_info == NULL) {
         timestamp_prefix_err();
@@ -70,7 +90,11 @@ int main(int argc, char* argv[]){
     }
 
     // ---------- Read in config ---------- 
-    if (readConfigFile(DEFAULT_CONFIG_FILEPATH, &control_data, &metadata) != 0) {
+    int read_config_ret = readConfigFile(config_file, &control_data, &metadata);
+
+    g_free(config_file);
+
+    if (read_config_ret != 0) {
         timestamp_prefix_err();
         g_printerr("Couldn't read config file.\n");
         err_code = EXIT_FAILURE;
@@ -82,7 +106,9 @@ int main(int argc, char* argv[]){
 
 
     // ---------- Format pipeline description ---------- 
-    char *pipeline_string_format = gst_pipeline_txt_gen(DEFAULT_PIPELINE_FILEPATH, control_data->recordRaw);
+    char *pipeline_string_format = gst_pipeline_txt_gen(pipeline_file, control_data->recordRaw);
+
+    g_free(pipeline_file);
 
     if (pipeline_string_format == NULL) {
         timestamp_prefix_err();

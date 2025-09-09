@@ -13,30 +13,31 @@ BUILD := build
 # Define TEST_REQS in each test, add test recipe to test_all
 TEST = $(CC) $(CPPFLAGS) $(TEST_REQS) tests/$@.c -o $(BUILD)/$@ $(DEV_CFLAGS)
 
-build:
-	mkdir -p build
-
 
 main:
 	$(CC) $(CPPFLAGS) $(SRC) -o main $(CFLAGS)
 sensor_setup:
 	$(CC) $(CPPFLAGS) $(SENSOR_SETUP_SRC) -o sensor_setup $(CFLAGS)
 
+all: main sensor_setup
 
-all: build main sensor_setup
-
-dev_main: build
+dev_main:
 	$(CC) $(CPPFLAGS) $(SRC) -o main $(DEV_CFLAGS)
 
-dev_sensor_setup: build
+dev_sensor_setup: 
 	$(CC) $(CPPFLAGS) $(SENSOR_SETUP_SRC) -o sensor_setup $(DEV_CFLAGS)
 
-dev_all: build dev_main dev_sensor_setup
+dev_all: dev_main dev_sensor_setup
 
-# TODO: clean up leftover recipes
+clean:
+	rm -rf $(BUILD)
+	rm ./main
+	rm ./sensor_setup
 
-mvp: build
-	$(CC) $(CPPFLAGS) src/mvp.c src/config.c src/cJSON.c src/statusbroadcaster.c src/pipeline.c src/sensor.c -o $(BUILD)/mvp $(DEV_CFLAGS)
+build:
+	mkdir -p $(BUILD)
+
+# Not sure how many of these will still compile
 
 test_config: build
 	$(CC) $(CPPFLAGS) src/config.c src/cJSON.c src/addresschecker.c tests/test_config.c -o $(BUILD)/test_config -g
@@ -59,7 +60,3 @@ test_csv: build
 test_all: test_csv, test_sensor, test_config
 
 
-clean: build
-	rm -rf $(BUILD)
-	rm ./main
-	rm ./sensor_setup

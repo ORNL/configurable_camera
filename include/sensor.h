@@ -6,7 +6,7 @@
 #include <gst/gst.h>
 
 #define METADATA_CSV_HEADER "Time (s), Gain (dB), Auto Gain Setting, Exposure (us), Auto Exposure Setting, Black Level, Auto Target Brightness, Frame Rate, Sensor Temperature, Temperature State\n"
-#define SENSOR_SETUP_JSON "/home/briar/configurable_code/sensor.json"
+#define DEFAULT_SENSOR_JSON "sensor.json"
 
 enum {TEMPERATURE_OK, TEMPERATURE_CRITICAL, TEMPERATURE_ERROR, TEMPERATURE_NONE}; // Sensor temperature states
 enum {AUTO_OFF, AUTO_ONCE, AUTO_CONTINUOUS}; // auto gain and exposure settings
@@ -77,9 +77,9 @@ char *formatSensorDynamicInfoCSV(SensorDynamicInfo *si);
 
 char *sensorSetupInfoJSON(SensorSetupInfo *ssi);
 
-int writeSensorSetupJSON(void);
+int writeSensorSetupJSON(const char* sensor_setup_json_path);
 
-SensorSetupInfo *loadSensorSetupInfo(void);
+SensorSetupInfo *loadSensorSetupInfo(const char* sensor_setup_json_path);
 
 char *sensorSetupInfoJSON(SensorSetupInfo *sensor_setup_info);
 

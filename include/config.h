@@ -3,11 +3,10 @@
 
 #include "cJSON.h"
 
-#define DEFAULT_CONFIG_FILEPATH "~/configurable_code/config.json"
-#define DEFAULT_PIPELINE_FILEPATH "~/configurable_code/pipeline.txt"
+#define DEFAULT_CONFIG_FILEPATH "/home/nvidia/configurable_camera/config.json"
+#define DEFAULT_PIPELINE_FILEPATH "/home/nvidia/configurable_camera/pipeline.txt"
 #define IP_STR_MAX_LEN 16
 #define DATE_LEN 8
-#define BROADCAST_ADDRESS "255.255.255.255"
 
 typedef struct _ControlData {
 
@@ -90,6 +89,6 @@ int copy_file(const char *from, const char *to);
 
 char *gst_pipeline_txt_gen(const char *filepath, int rtsp_only);
 
-int replace_with_address(char** interface_name);
+int replace_with_address(char** interface_name, char** broadcast_address);
 
 #endif

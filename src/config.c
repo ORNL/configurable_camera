@@ -38,11 +38,6 @@ HardwareScripts *read_HardwareScript(cJSON *config) {
       hardware_script->listenerPort = strdup(ob->valuestring);
     } else if (strcmp(ob->string, "Device IP") == 0) {
       hardware_script->deviceIP = strdup(ob->valuestring);
-      if (replace_with_address(&(hardware_script->deviceIP)) != 0) {
-        printf("Failed to read hardware script.\n");
-        free_HardwareScripts(hardware_script);
-        return NULL;
-      }
     } else if (strcmp(ob->string, "Device Port") == 0) {
       hardware_script->devicePort = strdup(ob->valuestring);
     } else if (strcmp(ob->string, "Capabilities") == 0) {
@@ -101,7 +96,7 @@ ControlData *read_ControlData(cJSON *config) {
       control_data->rawTimeLimit = ob->valueint;
     } else if (strcmp(ob->string, "Control IP") == 0) {
       control_data->controlIP = strdup(ob->valuestring);
-      if (replace_with_address(&(control_data->controlIP)) != 0) {
+      if (replace_with_address(&(control_data->controlIP), &(control_data->broadcastAddress)) != 0) {
         goto err;
       }
     } else if (strcmp(ob->string, "Control Port") == 0) {
@@ -110,7 +105,7 @@ ControlData *read_ControlData(cJSON *config) {
       control_data->statusBroadcastPort = ob->valueint;
     } else if (strcmp(ob->string, "RTSP Address") == 0) {
       control_data->RTSPaddress = strdup(ob->valuestring);
-      if (replace_with_address(&(control_data->RTSPaddress)) !=0) {
+      if (replace_with_address(&(control_data->RTSPaddress), NULL) !=0) {
         goto err;
       }
     } else if (strcmp(ob->string, "Hardware Scripts") == 0) {
@@ -260,7 +255,6 @@ int readConfigFile(char *config_filepath, ControlData **control_data_ptr, Metada
   }
   
   // Set up additional control data
-  (*control_data_ptr)->broadcastAddress = strdup(BROADCAST_ADDRESS);
   // duplicate location value because this will need to be
   // recorded as metadata and used to filter trigger messages
   (*control_data_ptr)->location = (*metadata_ptr)->location;
@@ -276,6 +270,10 @@ int readConfigFile(char *config_filepath, ControlData **control_data_ptr, Metada
 
   if (!isValidIp4((*control_data_ptr)->controlIP)) {
     printf("Invalid network IP address: %s\n", (*control_data_ptr)->controlIP);
+    goto failed;
+  }
+  if (!isValidIp4((*control_data_ptr)->broadcastAddress)) {
+    printf("Invalid broadcast IP address: %s\n", (*control_data_ptr)->broadcastAddress);
     goto failed;
   }
   if (!isValidIp4((*control_data_ptr)->RTSPaddress)) {
@@ -385,16 +383,18 @@ int format_recording_directory(ControlData *control_data, char **filepath_ptr) {
 
 }
 
-int replace_with_address(char** interface_name) {
+int replace_with_address(char** interface_name, char** broadcast_address) {
   /*
   Iterates through network interfaces, checks for AF_INET type addresses
   and assigns their IPv4 address to 
   the string pointed to by interface_name
-  if the string matches one of the interfaces
+  if the string matches one of the interfaces.
+  Also fills out the corresponding broadcast address if not a null pointer
   */
   struct ifaddrs *ifaddr;
   int family, s;
   char host[IP_STR_MAX_LEN + 1];
+  char broadcast[IP_STR_MAX_LEN + 1];
 
   if (getifaddrs(&ifaddr) == -1) {
     printf("Failed to get network interface addresses\n");
@@ -410,13 +410,26 @@ int replace_with_address(char** interface_name) {
     if (family == AF_INET) {
       s = getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in), host, IP_STR_MAX_LEN, NULL, 0, NI_NUMERICHOST); 
       if (s != 0) {
-        printf("getnameinfo() failed.\n");
+        printf("getnameinfo() failed to get network address.\n");
         freeifaddrs(ifaddr);
         return -1;
+      }
+      if (broadcast_address != NULL) {
+	s = getnameinfo(ifa->ifa_broadaddr, sizeof(struct sockaddr_in), broadcast, IP_STR_MAX_LEN, NULL, 0, NI_NUMERICHOST);
+	if (s != 0) {
+	  printf("getnameinfo() failed to get broadcast address.\n");
+	  freeifaddrs(ifaddr);
+	  return -1;
+	}
       }
       if (strcmp(ifa->ifa_name, *interface_name) == 0) {
         free(*interface_name);
         *interface_name = strdup(host);
+      }
+      if (strcmp(*interface_name, host) == 0) {
+	if (broadcast_address != NULL) {
+	  *broadcast_address = strdup(broadcast);
+	}
       }
     }
   }
